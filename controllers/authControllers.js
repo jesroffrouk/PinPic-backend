@@ -46,7 +46,7 @@ const authControllers = {
     logger.info('user retrived successfully');
     res
       .status(201)
-      .json(userDetails, { message: 'user data retrived successfully' });
+      .json({user: userDetails, success: true, message: 'user data retrived successfully' });
   }),
 
   LoginWithGoogle: catchAsync(async (req, res) => {

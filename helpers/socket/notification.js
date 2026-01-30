@@ -8,7 +8,7 @@ export const sendNotification = async({type,recipient_id,notificationId}) => {
     const sockets = await io.in(recipient_id).fetchSockets();
     if (sockets.length > 0) {
         let msg = '';
-        if ((type = 'like')) {
+        if ((type == 'upvoted')) {
             msg = `someone has upvoted your image`;
         }
         io.to(recipient_id).emit('notification', {

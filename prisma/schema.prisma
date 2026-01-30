@@ -1,21 +1,12 @@
 generator client {
-  provider = "prisma-client-js"
-  output   = "../generated/prisma"
+  provider      = "prisma-client-js"
+  output        = "../generated/prisma"
   binaryTargets = ["native", "debian-openssl-1.1.x"]
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("POSTGRE_URI")
-}
-
-model places {
-  id       Int                       @id @default(autoincrement())
-  location Unsupported("geography")?
-  captions String?
-  imgurl   String?
-  userid   Int?
-  users    users?                    @relation(fields: [userid], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
@@ -28,17 +19,65 @@ model spatial_ref_sys {
 }
 
 model users {
-  id                        Int       @id @default(autoincrement())
-  username                  String    @unique @db.VarChar(50)
-  email                     String    @unique @db.VarChar(100)
-  password                  String?
-  is_verified               Boolean?  @default(false)
-  is_admin                  Boolean?  @default(false)
-  created_at                DateTime? @default(now()) @db.Timestamp(6)
-  updated_at                DateTime? @default(now()) @db.Timestamp(6)
-  isoauthuser               Boolean?  @default(false)
-  googleid                  String?   @unique @db.VarChar(30)
-  verify_email_token        String?   @unique
-  verify_email_token_expiry DateTime? @default(dbgenerated("(now() + '24:00:00'::interval)")) @db.Timestamp(6)
-  places                    places[]
+  id                                              BigInt          @id @default(autoincrement())
+  public_id                                       String          @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  username                                        String          @unique @db.VarChar(50)
+  email                                           String          @unique @db.VarChar(255)
+  password                                        String?
+  is_verified                                     Boolean?        @default(false)
+  is_admin                                        Boolean?        @default(false)
+  isoauthuser                                     Boolean?        @default(false)
+  googleid                                        String?         @unique @db.VarChar(255)
+  verify_email_token                              String?
+  verify_email_token_expiry                       DateTime?       @db.Timestamptz(6)
+  created_at                                      DateTime?       @default(now()) @db.Timestamptz(6)
+  updated_at                                      DateTime?       @default(now()) @db.Timestamptz(6)
+  notifications_notifications_actor_idTousers     notifications[] @relation("notifications_actor_idTousers")
+  notifications_notifications_recipient_idTousers notifications[] @relation("notifications_recipient_idTousers")
+  posts                                           posts[]
+  votes                                           votes[]
+}
+
+model notifications {
+  id                                      BigInt     @id @default(autoincrement())
+  public_id                               String     @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  recipient_id                            BigInt
+  actor_id                                BigInt
+  is_read                                 Boolean?   @default(false)
+  is_sent                                 Boolean?   @default(false)
+  type                                    react_type @default(none)
+  created_at                              DateTime?  @default(now()) @db.Timestamptz(6)
+  metadata                                Json?
+  users_notifications_actor_idTousers     users      @relation("notifications_actor_idTousers", fields: [actor_id], references: [id], onDelete: Cascade, map: "fk_actor")
+  users_notifications_recipient_idTousers users      @relation("notifications_recipient_idTousers", fields: [recipient_id], references: [id], onDelete: Cascade, map: "fk_recipient")
+}
+
+model posts {
+  id         BigInt                   @id @default(autoincrement())
+  public_id  String                   @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    BigInt
+  location   Unsupported("geography")
+  captions   String?
+  created_at DateTime?                @default(now()) @db.Timestamptz(6)
+  imgurl     String
+  users      users                    @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "fk_user")
+  votes      votes[]
+}
+
+model votes {
+  id         BigInt     @id @default(autoincrement())
+  public_id  String     @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    BigInt
+  img_id     BigInt
+  is_active  Boolean?   @default(true)
+  react_type react_type @default(none)
+  created_at DateTime?  @default(now()) @db.Timestamptz(6)
+  posts      posts      @relation(fields: [img_id], references: [id], onDelete: Cascade, map: "fk_posts")
+  users      users      @relation(fields: [user_id], references: [id], onDelete: Cascade, map: "fk_user")
+}
+
+enum react_type {
+  upvoted
+  downvoted
+  none
 }

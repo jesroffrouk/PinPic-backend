@@ -1,7 +1,8 @@
 import { sendNotification } from "../helpers/socket/notification.js"
 import placesModels from "../models/placesModels.js"
 
-export const sendPendingNotifications = async (userId) => {
+export const sendPendingNotifications = async (userPublicId) => {
+    const {id: userId} = (await placesModels.getIdFromPublicId('users',userPublicId))?.rows[0]
     const pendingNotifications = await placesModels.getNotificationToSend(userId)
     console.log(pendingNotifications.rows)
     if(pendingNotifications.rowCount > 0) {

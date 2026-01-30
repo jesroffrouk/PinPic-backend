@@ -69,13 +69,15 @@ const authServices = {
     }
     logger.info('password matched');
     // userinfo to be send for frontend
+    // future: build a bigint to string converter for this kind of scenario
     const UserInfo = {
-      id: user.id,
+      id: user.public_id,
       username: user.username,
       email: user.email,
     };
     const token = jwt.sign(UserInfo, secretkey, { expiresIn: '1h' });
     logger.info('successfully logged in');
+    logger.info(UserInfo.id)
     return { token, UserInfo };
   },
   OauthGoogleLogin: async (sub, email, name) => {
@@ -95,7 +97,7 @@ const authServices = {
       logger.info('user created successfully');
       const newUser = result.rows[0];
       userDetails = {
-        id: newUser.id,
+        id: newUser.public_id,
         username: newUser.username,
         email: newUser.email,
       };
@@ -112,7 +114,7 @@ const authServices = {
         );
       }
       userDetails = {
-        id: user.id,
+        id: user.id.toString(),
         username: user.username,
         email: user.email,
       };

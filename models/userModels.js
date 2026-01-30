@@ -1,6 +1,5 @@
 import { createLoggerFor } from '../helpers/loggers/loggers.js';
 import { PrismaClient } from '../generated/prisma/client.js';
-import db from '../config/db/conn.js'
 
 const logger = createLoggerFor(import.meta.url, 'db service');
 const prisma = new PrismaClient();
@@ -63,7 +62,7 @@ const userModels = {
     return await prisma.users.findUnique({
       where: { username },
       select: {
-        id: true,
+        public_id: true,
         username: true,
         email: true,
         password: true,

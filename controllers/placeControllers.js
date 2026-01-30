@@ -51,8 +51,9 @@ const placeControllers = {
   }),
   getNotification: catchAsync(async (req,res) => {
     logger.info('get notification started..')
-    const user_id = req.user.id
-    const result = await placesModels.getNotification(user_id)
+    const userPublicId = req.user.id
+    const {id: userId} = (await placesModels.getIdFromPublicId('users',userPublicId))?.rows[0]
+    const result = await placesModels.getNotification(userId)
     logger.info('get notification successful')
     const notifications = result.rows
     console.log(notifications)
