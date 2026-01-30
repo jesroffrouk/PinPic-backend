@@ -36,7 +36,7 @@ const placesModels = {
               WHEN EXISTS (
                   SELECT 1 
                   FROM votes u2 
-                  WHERE u2.img_id = votes.id 
+                  WHERE u2.img_id = posts.id 
                     AND u2.user_id = $3
                     AND u2.react_type = 'upvoted'
               ) 
@@ -50,7 +50,7 @@ const placesModels = {
           ST_GeogFromText($1), 
           $2
       )
-      GROUP BY posts.id, users.username , votes.id
+      GROUP BY posts.id, users.username 
       ORDER BY upvotes_count;
             `,
             [`SRID=4326;POINT(${longitude} ${latitude})`, 1000, userId]
