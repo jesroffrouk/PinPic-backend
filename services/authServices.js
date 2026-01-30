@@ -62,7 +62,7 @@ const authServices = {
     logger.info('user successfully retrived from db');
     const hashPassword = user.password;
     logger.info('matching password...');
-    const match = await bcrypt.compare(password, hashPassword);
+    const match = bcrypt.compare(password, hashPassword);
     if (!match) {
       logger.warn('incorrect Password');
       throw new CustomError('incorrect password', 400, 'INCORRECT_PASSWORD');

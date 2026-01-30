@@ -1,7 +1,9 @@
-import placesServices from '../services/placesServices.js';
 import catchAsync from '../utils/catchAsync.js';
 import { createLoggerFor } from '../helpers/loggers/loggers.js';
 import placesModels from '../models/placesModels.js';
+import uploadServices from '../services/uploadServices.js';
+import feedServices from '../services/feedServices.js';
+import metadataServices from '../services/metadataServices.js';
 
 const logger = createLoggerFor(import.meta.url, 'place controllers');
 
@@ -13,7 +15,7 @@ const placeControllers = {
     const fileBase64 = `data:${
       req.file.mimetype
     };base64,${req.file.buffer.toString('base64')}`;
-    const result = await placesServices.uploadImage(
+    const result = await uploadServices.uploadImage(
       userid,
       captions,
       longitude,
@@ -28,7 +30,7 @@ const placeControllers = {
     const longitude = req.query.longitude;
     const latitude = req.query.latitude;
     const userid = req.user.id
-    const { data } = await placesServices.getImageByLocation(
+    const { data } = await feedServices.getImageByLocation(
       longitude,
       latitude,
       userid
@@ -45,7 +47,7 @@ const placeControllers = {
     const imgid = req.body.imgid;
     const userid = req.user.id;
     //  upvote services logic
-    const result = await placesServices.upVoteImage(userid, imgid, react_type);
+    const result = await metadataServices.upVoteImage(userid, imgid, react_type);
     logger.info('upvote successfull');
     res.status(201).json(result);
   }),

@@ -93,7 +93,7 @@ const placesModels = {
         return await db.query(
             `
             SELECT users.id FROM users JOIN
-            posts ON users.id = votes.user_id 
+            posts ON users.id = posts.user_id 
             WHERE posts.id = $1
             `,
             [imgId]
