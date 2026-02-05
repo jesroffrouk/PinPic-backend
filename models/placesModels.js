@@ -13,25 +13,50 @@ const placesModels = {
             [public_id]
         );
     },
-    setImages: async (captions, imgurl, longitude, latitude, userId) => {
+    setImages: async (title,content, imgurl, longitude, latitude, userId) => {
         logger.info('adding Image to db');
         return await db.query(
-            `INSERT INTO posts (captions,imgurl,location,user_id) VALUES ($1,$2, ST_GeogFromText('POINT('|| $3 || ' '|| $4 || ' )'), $5 ) RETURNING *`,
-            [captions, imgurl, longitude, latitude, userId]
+            `INSERT INTO posts (title,content,imgurl,location,user_id) VALUES ($1,$2, $3, ST_GeogFromText('POINT('|| $4 || ' '|| $5 || ' )'), $6 ) RETURNING *`,
+            [title,content, imgurl, longitude, latitude, userId]
         );
     },
 
-    getImages: async (longitude, latitude, userId) => {
-        console.log(longitude, latitude, userId);
+    getAllImagesByLocation: async (longitude, latitude) => {
         logger.info('getting images from db');
         return await db.query(
             `SELECT 
       posts.public_id as id,
-      posts.location,
-      posts.captions,
+      posts.title,
       posts.imgurl,
+      posts.upvotes_count,
+      users.username AS author_name
+      FROM posts 
+      JOIN users ON posts.user_id = users.id 
+      LEFT JOIN votes ON posts.id = votes.img_id 
+      WHERE ST_DWithin(
+          location, 
+          ST_GeogFromText($1), 
+          $2
+      )
+      ORDER BY upvotes_count;
+            `,
+            [`SRID=4326;POINT(${longitude} ${latitude})`, 1000]
+        );
+    },
+    getImageById: async (longitude, latitude, userId,postId) => {
+        logger.info('getting images from db');
+        return await db.query(
+            `SELECT 
+      posts.public_id as id,
+      posts.title,
+      posts.content,
+      posts.imgurl,
+      posts.upvotes_count,
+      posts.comments_count,
+      posts.visitors_count,
+      posts.created_at as upload_date,
+      users.public_id AS author_id,
       users.username AS author_name,
-      COUNT(DISTINCT CASE WHEN votes.react_type = 'upvoted' THEN votes.id END) AS upvotes_count,
           CASE 
               WHEN EXISTS (
                   SELECT 1 
@@ -49,11 +74,9 @@ const placesModels = {
           location, 
           ST_GeogFromText($1), 
           $2
-      )
-      GROUP BY posts.id, users.username 
-      ORDER BY upvotes_count;
+      ) AND posts.id = $4
             `,
-            [`SRID=4326;POINT(${longitude} ${latitude})`, 1000, userId]
+            [`SRID=4326;POINT(${longitude} ${latitude})`, 1000, userId ,postId]
         );
     },
     doesUpoteExist: async (userId, imgId) => {
@@ -86,6 +109,98 @@ const placesModels = {
             WHERE id = $2;
             `,
             [reactType, id]
+        );
+    },
+    decreaseUpvotesCount: async (postId) => {
+        logger.info('decreasing upvotes count');
+        return await db.query(
+            `
+            UPDATE posts
+            SET upvotes_count = upvotes_count - 1
+            WHERE id = $1 AND upvotes_count > 0;
+            `,
+            [postId]
+        );
+    },
+    increaseUpvotesCount: async (postId) => {
+        logger.info('increasing upvotes count');
+        return await db.query(
+            `
+            UPDATE posts
+            SET upvotes_count = upvotes_count + 1
+            WHERE id = $1;
+            `,
+            [postId]
+        );
+    },
+    getComments: async (postId) => {
+        logger.info('getting comments for Post');
+        return await db.query(
+            `
+            SELECT 
+                comments.public_id as id,
+                comments.comment,
+                comments.author as author_id,
+                comments.created_at AS date,
+                users.username as author_name
+            FROM comments
+            LEFT JOIN users ON comments.author = users.id
+            WHERE post_id = $1
+            `,
+            [postId]
+        );
+    },
+    setComment: async (userId,postId,comment) => {
+        logger.info('adding comments for Post');
+        return await db.query(
+            `
+            INSERT INTO comments (author,post_id,comment)
+            VALUES ($1,$2,$3)
+            `,
+            [userId,postId,comment]
+        );
+    },
+    increaseCommentCount: async (postId) => {
+        logger.info('adding comments for Post');
+        return await db.query(
+            `
+            UPDATE posts
+            SET comments_count = comments_count + 1
+            WHERE id = $1
+            `,
+            [postId]
+        );
+    },
+    doesVisitorExist: async (userId,postId) => {
+        logger.info('checking if visitor already exist');
+        return await db.query(
+            `
+            SELECT EXISTS (
+            SELECT 1 FROM visitors 
+            WHERE visitor_id = $1 AND post_id = $2
+            )
+            `,
+            [userId,postId]
+        );
+    },
+    setVisitor: async (userId,postId) => {
+        logger.info('adding new visitor');
+        return await db.query(
+            `
+            INSERT INTO visitors (visitor_id,post_id) VALUES ($1,$2)
+            `,
+            [userId,postId]
+        );
+    },
+    increaseVisitorCount: async (postId) => {
+        logger.info('increasing visitor count');
+        return await db.query(
+            `
+            UPDATE posts
+            SET visitors_count = visitors_count + 1
+            WHERE id = $1
+            `,
+            [postId]
         );
     },
     getUserFromimgid: async (imgId) => {

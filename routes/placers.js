@@ -22,13 +22,36 @@ router.get(
   '/all',
   validateMiddlewares.validateLocation,
   authMiddleware.requireAuth,
-  placeControllers.getImagesByLocation
+  placeControllers.getAllImagesByLocation
+);
+router.get(
+  '/story',
+  validateMiddlewares.validateLocation,
+  authMiddleware.requireAuth,
+  placeControllers.getImageById
 );
 
 router.post(
   '/upvotes',
   authMiddleware.requireAuth,
   placeControllers.upvoteImage
+);
+
+router.get(
+  '/comments',
+  authMiddleware.requireAuth,
+  placeControllers.getComments
+);
+router.post(
+  '/comments',
+  authMiddleware.requireAuth,
+  placeControllers.setComment
+);
+
+router.post(
+  '/visitors',
+  authMiddleware.requireAuth,
+  placeControllers.setVisitors
 );
 
 router.get(
