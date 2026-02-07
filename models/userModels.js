@@ -112,6 +112,18 @@ const userModels = {
       },
     });
   },
+  getUserProfile: async (userId) => {
+    logger.info('getting user profile info from database');
+    return await prisma.users.findUnique({
+      where: { id: userId },
+      select: {
+        username: true,
+        email: true,
+        bio: true,
+        profile_url: true
+      },
+    });
+  },
 };
 
 export default userModels;

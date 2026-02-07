@@ -8,6 +8,7 @@ import { generateUniqueUsername } from '../utils/usernameGenerator.js';
 import crypto from 'crypto';
 import CustomError from '../utils/CustomError.js';
 import { createLoggerFor } from '../helpers/loggers/loggers.js';
+import placesModels from '../models/placesModels.js';
 
 const logger = createLoggerFor(import.meta.url, 'auth service');
 
@@ -143,6 +144,12 @@ const authServices = {
     logger.info('verfied, updated in db');
     logger.info('email verified successfully');
     return { message: 'email verified successfully' };
+  },
+  getUserProfile: async (userPublicId) => {
+    logger.info('getting id from publicId')
+    const {id:userId} = (await placesModels.getIdFromPublicId('users',userPublicId))?.rows[0]
+    const user = await User.getUserProfile(userId);
+    return { userDetails: user, success: true, message: 'user profile info retrieved successfully' };
   },
 };
 

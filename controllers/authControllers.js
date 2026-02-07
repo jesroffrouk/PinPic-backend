@@ -76,6 +76,14 @@ const authControllers = {
     logger.info('email verified successfully');
     res.status(201).json(result);
   }),
+  getUserProfile: catchAsync(async (req, res) => {
+    logger.info('getUserProfile started..');
+    const userId = req.user.id;
+    const result = await authServices.getUserProfile(userId);
+    console.log(result)
+    logger.info('get User profile details successfull');
+    res.status(201).json(result);
+  }),
 };
 
 export default authControllers;
