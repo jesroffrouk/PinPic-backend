@@ -9,6 +9,7 @@ const feedServices = {
     // userid must be public_Id so request and change it to id before use
     const result = await placesModels.getAllImagesByLocation(longitude, latitude);
     const data = result.rows;
+    console.log(data)
     logger.info('sorting the images..');
     logger.info('image retrived successful');
     return { data };
@@ -21,7 +22,6 @@ const feedServices = {
     // don't use location if you want to show it to user or let them save it so that they can read it anywhere they want
     const result = await placesModels.getImageById(longitude,latitude,userId,postId);
     const data = result.rows[0];
-    logger.info('sorting the images..');
     logger.info('image retrived successful');
     return { data };
   },

@@ -1,5 +1,5 @@
 import catchAsync from '../utils/catchAsync.js';
-import authServices from '../services/authServices.js';
+import { authServices } from '../container.js';
 import { createLoggerFor } from '../helpers/loggers/loggers.js';
 
 const logger = createLoggerFor(import.meta.url, 'auth controlller service');

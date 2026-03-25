@@ -58,7 +58,6 @@ const placeControllers = {
   upvoteImage: catchAsync(async (req, res) => {
     logger.info('upvote an image started..');
     // validate user inputs
-    // check the type of react, it can only be like or dislike for now
     console.log(req.body)
     const react_type = req.body.react_type
     const imgid = req.body.imgid;

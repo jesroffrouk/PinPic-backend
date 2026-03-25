@@ -9,6 +9,7 @@ const metadataServices = {
   upVoteImage: async (userPublicId, imgPublicId, reactType) => {
     // get id from publicid
     // change imgid to postsId instead --for future
+        // impt: I had doubt on this logic on related to multple attempts causing it to increasing upvotes twice , need to test.
     const {id: userId} = (await placesModels.getIdFromPublicId('users',userPublicId))?.rows[0]
     const {id: imgId} = (await placesModels.getIdFromPublicId('posts',imgPublicId))?.rows[0]
     const doesUpvoteExist = await placesModels.doesUpoteExist(userId, imgId); // expecting object
@@ -61,7 +62,7 @@ const metadataServices = {
       }
       await sendNotification(notData)
     }
-    if (reactType === 'downvoted') {
+    else if (reactType === 'downvoted') {
       // increase downvote
       // for future
     }
