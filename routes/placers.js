@@ -60,4 +60,10 @@ router.get(
   placeControllers.getNotification
 )
 
+router.get(
+    '/place',
+    authMiddleware.requireAuth,
+    placeControllers.getLocationName
+)
+
 export default router;

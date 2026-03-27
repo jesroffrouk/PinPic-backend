@@ -4,6 +4,7 @@ import placesModels from '../models/placesModels.js';
 import uploadServices from '../services/uploadServices.js';
 import feedServices from '../services/feedServices.js';
 import metadataServices from '../services/metadataServices.js';
+import locationServices from '../services/locationService.js';
 
 const logger = createLoggerFor(import.meta.url, 'place controllers');
 
@@ -109,7 +110,15 @@ const placeControllers = {
     const notifications = result.rows
     console.log(notifications)
     res.status(201).json({notifications,success: true})
-  })
+  }),
+  getLocationName: catchAsync(async(req,res)=> {
+    logger.info('getLocationName started..')
+    const latitude = req.query.latitude
+    const longitude = req.query.longitude
+    const result = await locationServices.getLocationName({latitude,longitude})
+    logger.info('getLocationName successful')
+    res.status(201).json(result)
+    })
 };
 
 export default placeControllers;
