@@ -21,15 +21,16 @@ const placesModels = {
         );
     },
 
-    getAllImagesByLocation: async (longitude, latitude) => {
-        logger.info('getting images from db');
+    getAllImagesByLocationFirst: async (longitude, latitude) => {
+        logger.info('getting first latest 10 images from db');
         return await db.query(
             `SELECT 
       posts.public_id as id,
       posts.title,
       posts.imgurl,
       posts.upvotes_count,
-      users.username AS author_name
+      users.username AS author_name,
+      posts.created_at
       FROM posts 
       JOIN users ON posts.user_id = users.id 
       LEFT JOIN votes ON posts.id = votes.img_id 
@@ -38,9 +39,40 @@ const placesModels = {
           ST_GeogFromText($1), 
           $2
       )
-      ORDER BY upvotes_count;
+      ORDER BY posts.created_at DESC, posts.id DESC
+      LIMIT 11;
             `,
             [`SRID=4326;POINT(${longitude} ${latitude})`, 1000]
+        );
+    },
+    getAllImagesByLocationNext: async (cursor_created_at,cursor_post_id,longitude, latitude) => {
+        logger.info('getting next latest 10 images from db');
+        return await db.query(
+            `SELECT 
+      posts.public_id as id,
+      posts.title,
+      posts.imgurl,
+      posts.upvotes_count,
+      users.username AS author_name,
+      posts.created_at
+      FROM posts 
+      JOIN users ON posts.user_id = users.id 
+      LEFT JOIN votes ON posts.id = votes.img_id 
+      WHERE 
+        (
+        posts.created_at < $1
+        OR (posts.created_at = $1 AND posts.id < $2 )
+        )
+        AND  
+        ST_DWithin(
+              location, 
+              ST_GeogFromText($3), 
+              $4
+          ) 
+      ORDER BY posts.created_at DESC , posts.id DESC
+      LIMIT 11 ;
+            `,
+            [cursor_created_at,cursor_post_id,`SRID=4326;POINT(${longitude} ${latitude})`, 1000]
         );
     },
     getImageById: async (longitude, latitude, userId,postId) => {
@@ -66,12 +98,20 @@ const placesModels = {
                     AND u2.react_type = 'upvoted'
               ) 
               THEN true ELSE false
-          END AS upvoted
+          END AS upvoted,
+          CASE 
+              WHEN EXISTS (
+                  SELECT 1 
+                  FROM collections c 
+                  WHERE c.post_id = posts.id 
+                    AND c.user_id = $3
+              ) 
+              THEN true ELSE false
+          END AS collected
       FROM posts 
       JOIN users ON posts.user_id = users.id 
-      LEFT JOIN votes ON posts.id = votes.img_id 
       WHERE ST_DWithin(
-          location, 
+          posts.location, 
           ST_GeogFromText($1), 
           $2
       ) AND posts.id = $4
@@ -257,7 +297,70 @@ const placesModels = {
             SET is_sent = true
             WHERE id = $1;
             `,[notificationId])
-    }
+    },
+    // collection queries
+    doestCollectionExist: async(user_id,post_id) => {
+        logger.info('checking if collection exists')
+        return await db.query(`
+            SELECT id FROM Collections
+            WHERE user_id = $1 and post_id = $2;
+        `,[user_id,post_id])
+    },
+    setCollections: async(user_id,post_id) => {
+        logger.info('checking if collection exists')
+        return await db.query(`
+        INSERT INTO collections (user_id,post_id) VALUES ($1,$2);
+        `,[user_id,post_id])
+    },
+    removeCollections: async(collection_id) => {
+        logger.info('deleting collection which Exist')
+        return await db.query(`
+            DELETE FROM Collections
+            WHERE id = $1
+        `,[collection_id])
+    },
+    getCollectionsFirst: async(user_id) => {
+        logger.info('getCollection of first 10 recent posts')
+        return await db.query(`
+           SELECT 
+                c.public_id as id,
+                p.public_id as post_id,
+                p.title,
+                p.imgurl,
+                p.upvotes_count,
+                p.visitors_count,
+                c.created_at
+           from collections c 
+           JOIN posts p ON p.id = c.post_id 
+           WHERE c.user_id = $1
+           ORDER BY c.created_at DESC
+           LIMIT 11
+        `,[user_id])
+    },
+    getCollectionsNext: async(cursor_created_at,cursor_post_id,user_id) => {
+        logger.info('getCollection of next 10 recent posts')
+        return await db.query(`
+           SELECT
+                c.public_id as id,
+                p.public_id as post_id,
+                p.title,
+                p.imgurl,
+                p.upvotes_count,
+                p.visitors_count,
+                c.created_at
+           from collections c 
+           JOIN posts p ON p.id = c.post_id 
+           WHERE c.user_id = $1
+            AND (c.created_at < $2
+            OR (
+                c.created_at = $2
+                AND c.post_id < $3
+                )
+            )
+           ORDER BY c.created_at DESC, c.post_id DESC
+           LIMIT 11
+        `,[user_id,cursor_created_at,cursor_post_id])
+    },
 };
 
 export default placesModels;

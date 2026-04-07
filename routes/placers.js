@@ -66,4 +66,15 @@ router.get(
     placeControllers.getLocationName
 )
 
+router.post('/collection',
+    authMiddleware.requireAuth,
+    placeControllers.setCollection
+)
+
+router.get('/collection',
+    authMiddleware.requireAuth,
+    placeControllers.getCollection
+    )
+    
+
 export default router;

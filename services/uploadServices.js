@@ -26,7 +26,7 @@ const uploadServices = {
     ).rows;
     // reduce it and only send public_id not id
     logger.info('upload Image successfull');
-    return { success: true,message: 'upload image successfull' };
+    return { success: true, message: 'Upload Image successful',data: null}
   },
 }
 

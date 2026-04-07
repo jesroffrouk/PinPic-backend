@@ -67,7 +67,7 @@ const metadataServices = {
       // for future
     }
     logger.info('successfully performed interactions for user');
-    return { message: 'sucessfully created upvote for user', success: true };
+    return { message: 'sucessfully created upvote for user', success: true, data: null };
   },
   setCommentToPost: async(userPublicId,postPublicId,comment) => {
     // get id from publicId
@@ -78,7 +78,7 @@ const metadataServices = {
     // on success send successfull
     // increase comment count
     await placesModels.increaseCommentCount(postId)
-    return {success: true,message: 'comment added successfully'}
+    return {success: true,message: 'comment added successfully',data: null}
   },
   getComments: async(postPublicId) => {
     // get id from publicId
@@ -87,7 +87,11 @@ const metadataServices = {
     // send comments in batch. Future: send only 10 comments , provide rest on request.
     // plan it out.
     const data = (await placesModels.getComments(postId))?.rows
-    return {data}
+    return {
+            success: true,
+            message: 'comments retrieved successful',
+            data: data
+        }
   },
   setVisitor: async(userPublicId,postPublicId) => {
     // get id from publicId
@@ -97,14 +101,97 @@ const metadataServices = {
     const doesVisitorExist = (await placesModels.doesVisitorExist(userId,postId))?.rows[0]
     if (doesVisitorExist.exists) {
       logger.info('visitor already exist')
-      return {success: true,message: 'visitor already exist'}
+      return {success: true,message: 'visitor already exist',data: null}
     }
     // set new visitor
     await placesModels.setVisitor(userId,postId)
     // otherwise create a entry and increase visitor count
     await placesModels.increaseVisitorCount(postId)
-    return {success: true,message: 'visitor added successfully'}
-  }
+    return {success: true,message: 'visitor added successfully',data: null}
+  },
+    // collections services
+  setCollection: async(userPublicId,postPublicId) => {
+        // convert publicId to Id
+        const {id: userId} = (await placesModels.getIdFromPublicId('users',userPublicId))?.rows[0]
+        const {id: postId} = (await placesModels.getIdFromPublicId('posts',postPublicId))?.rows[0]
+
+        // check if collection entry already exist
+        const doesCollectionAlreadyExists = (await placesModels.doestCollectionExist(userId,postId))?.rows[0]
+        if (doesCollectionAlreadyExists) {
+            await placesModels.removeCollections(doesCollectionAlreadyExists.id) 
+            return {
+                success: true,
+                message: 'Remove from collection successful',
+                data: null
+            }
+        }
+        else{
+            await placesModels.setCollections(userId,postId);
+            logger.info('add to collections successful')
+            return { 
+                success: true,
+                message: 'Add to collection successful',
+                data: null
+            }
+
+        }
+    },
+    // it should be in feed services
+  getCollection: async(userPublicId,cursorCreatedAt,cursorPostPublicId) => {
+    // convert publicId to Id
+    const {id: userId} = (await placesModels.getIdFromPublicId('users',userPublicId))?.rows[0]
+        // if it's First time
+    if (cursorCreatedAt && cursorPostPublicId){
+           const {id: cursorPostId} = (await placesModels.getIdFromPublicId('posts',cursorPostPublicId))?.rows[0]
+            // next cursor
+           const result = (await placesModels.getCollectionsNext(cursorCreatedAt,cursorPostId,userId))?.rows
+           let hasMore = false
+            // limit = 10
+           if (result.length > 10) {
+                hasMore = true
+                result.pop()
+            }
+           const lastItem = result.at(-1)
+            return {
+                success: true,
+                message: 'next getCollection successful',
+                data: {
+                    posts: result,
+                    nextCursor: {
+                        created_at: lastItem?.created_at,
+                        id: lastItem?.post_id
+                    },
+                    hasMore
+                }
+            }
+        }
+    else {
+            // first time
+            const result = (await placesModels.getCollectionsFirst(userId))?.rows
+            let hasMore = false
+            // limit = 10
+            if (result.length > 10) {
+                hasMore = true
+                result.pop()
+             }
+            const lastItem = result.at(-1)
+            return {
+                success: true,
+                message: 'first getCollection successful',
+                data: {
+                    posts: result,
+                    nextCursor: {
+                        created_at: lastItem?.created_at,
+                        id: lastItem?.post_id
+                    },
+                    hasMore
+                }
+            }
+
+        }
+
+    }
+
 }
 
 export default metadataServices
