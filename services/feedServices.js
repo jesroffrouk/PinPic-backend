@@ -1,5 +1,6 @@
 import placesModels from '../models/placesModels.js';
 import { createLoggerFor } from '../helpers/loggers/loggers.js';
+import { generateSignedUrl, generateSignedUrlMultiple } from '../utils/generateSignedUrl.js';
 
 const logger = createLoggerFor(import.meta.url, 'feed Services');
 
@@ -15,11 +16,17 @@ const feedServices = {
                 result.pop()
             }
         const lastItem = result.at(-1)
+        // generateSignedUrl for it
+        let signedUrlPosts;
+
+        if (result.length > 0) {
+            signedUrlPosts = generateSignedUrlMultiple(result) 
+            }
         return {
                 success: true,
                 message: 'next getAllImagesByLocation successful',
                 data: {
-                    posts: result,
+                    posts: signedUrlPosts,
                     nextCursor: {
                         created_at: lastItem?.created_at,
                         id: lastItem?.id
@@ -37,12 +44,19 @@ const feedServices = {
                 result.pop()
             }
         const lastItem = result.at(-1)
+        let signedUrlPosts;
+
+        if (result.length > 0) {
+            signedUrlPosts = generateSignedUrlMultiple(result)
+            }
+
+        // generateSignedUrl for it
         logger.info('image retrieved successful');
         return {
                 success: true,
                 message: 'Image retrieved successful',
                 data: {
-                    posts: result,
+                    posts: signedUrlPosts,
                     nextCursor: {
                         created_at: lastItem?.created_at,
                         id: lastItem?.id
@@ -59,11 +73,19 @@ const feedServices = {
     // don't use location if you want to show it to user or let them save it so that they can read it anywhere they want
     const result = await placesModels.getImageById(longitude,latitude,userId,postId);
     const data = result.rows[0];
+    // handle if it's empty no need to change.
+    // generateSignedUrl
+    let signedUrldata;
+    if (data) {
+    signedUrldata = {
+        ...data, imgurl: generateSignedUrl(data.imgurl)
+        }
+        }
     logger.info('image retreived successful');
     return { 
             success: true,
             message: 'Image retrieved successful',
-            data: data
+            data: signedUrldata
         };
   },
 }

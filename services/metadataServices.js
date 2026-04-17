@@ -2,6 +2,7 @@ import placesModels from '../models/placesModels.js';
 import { createLoggerFor } from '../helpers/loggers/loggers.js';
 import { sendNotification } from '../helpers/socket/notification.js';
 import CustomError from '../utils/CustomError.js';
+import { generateSignedUrlMultiple } from '../utils/generateSignedUrl.js';
 
 const logger = createLoggerFor(import.meta.url, 'metadata Services');
 
@@ -152,11 +153,15 @@ const metadataServices = {
                 result.pop()
             }
            const lastItem = result.at(-1)
+           let signedPosts;
+           if (result.length > 0) {
+               signedPosts = generateSignedUrlMultiple(result)
+            }
             return {
                 success: true,
                 message: 'next getCollection successful',
                 data: {
-                    posts: result,
+                    posts: signedPosts,
                     nextCursor: {
                         created_at: lastItem?.created_at,
                         id: lastItem?.post_id
@@ -175,11 +180,15 @@ const metadataServices = {
                 result.pop()
              }
             const lastItem = result.at(-1)
+            let signedPosts;
+            if (result.length > 0) {
+                signedPosts = generateSignedUrlMultiple(result)
+            }
             return {
                 success: true,
                 message: 'first getCollection successful',
                 data: {
-                    posts: result,
+                    posts: signedPosts,
                     nextCursor: {
                         created_at: lastItem?.created_at,
                         id: lastItem?.post_id

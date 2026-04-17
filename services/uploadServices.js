@@ -10,10 +10,11 @@ const uploadServices = {
     logger.info('uploading images to cloudinary');
     const cloudResponse = await cloudinary.uploader.upload(fileBase64, {
       folder: 'uploads',
+      type: "authenticated",
     });
     logger.info('uploaded to cloudinary');
     logger.info('saving it to db');
-    const imgurl = cloudResponse.secure_url;
+    const imgurl = cloudResponse.public_id;
     // get id from public_id
     const {id: userId} = (await placesModels.getIdFromPublicId('users',userPublicId))?.rows[0]
     await placesModels.setImages(

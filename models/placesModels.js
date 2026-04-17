@@ -33,7 +33,6 @@ const placesModels = {
       posts.created_at
       FROM posts 
       JOIN users ON posts.user_id = users.id 
-      LEFT JOIN votes ON posts.id = votes.img_id 
       WHERE ST_DWithin(
           location, 
           ST_GeogFromText($1), 
@@ -57,7 +56,6 @@ const placesModels = {
       posts.created_at
       FROM posts 
       JOIN users ON posts.user_id = users.id 
-      LEFT JOIN votes ON posts.id = votes.img_id 
       WHERE 
         (
         posts.created_at < $1
