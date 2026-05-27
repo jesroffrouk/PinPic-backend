@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import createAuthServices from '../../../services/authServices';
+import createAuthServices from '../../../../services/authServices';
 
 let fakeLogger;
 let fakeBcrypt;
@@ -17,38 +17,38 @@ describe('registerUser()', () => {
     username: 'testuser',
     password: 'password123',
   };
-    beforeEach(()=> {
-       fakeLogger = {
-            info: vi.fn(),
-            warn: vi.fn(),
-            error: vi.fn()
-        }
-        fakeBcrypt = {
-            hash: vi.fn()
-        }
-        fakeVerifyTokens = vi.fn().mockReturnValue({
-          rawToken: 'raw123',
-          hashedToken: 'hashed123',
-        })
-        fakeRepo = {
-                doesUserExist: vi.fn(),
-                addNewUser: vi.fn()
-            }
+  beforeEach(() => {
+    fakeLogger = {
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    };
+    fakeBcrypt = {
+      hash: vi.fn(),
+    };
+    fakeVerifyTokens = vi.fn().mockReturnValue({
+      rawToken: 'raw123',
+      hashedToken: 'hashed123',
+    });
+    fakeRepo = {
+      doesUserExist: vi.fn(),
+      addNewUser: vi.fn(),
+    };
 
-        authServices = createAuthServices({
-                userRepository: fakeRepo,
-                helperRepository: fakeHelperRepository,
-                jwt: fakeJwt,
-                bcrypt: fakeBcrypt,
-                crypto: fakeCrypto,
-                generateVerifyTokens: fakeVerifyTokens,
-                generateUniqueUsername: fakeGenerateUniqueUsername,
-                logger: fakeLogger
-            })
-        })
+    authServices = createAuthServices({
+      userRepository: fakeRepo,
+      helperRepository: fakeHelperRepository,
+      jwt: fakeJwt,
+      bcrypt: fakeBcrypt,
+      crypto: fakeCrypto,
+      generateVerifyTokens: fakeVerifyTokens,
+      generateUniqueUsername: fakeGenerateUniqueUsername,
+      logger: fakeLogger,
+    });
+  });
 
   it('should be registered', async () => {
-    fakeRepo.doesUserExist.mockResolvedValue(false)
+    fakeRepo.doesUserExist.mockResolvedValue(false);
     // Act
     const result = await authServices.registerUser(
       input.email,
@@ -63,7 +63,7 @@ describe('registerUser()', () => {
   });
 
   it('should throw custom error for duplicate user', async () => {
-    fakeRepo.doesUserExist.mockResolvedValue(true)
+    fakeRepo.doesUserExist.mockResolvedValue(true);
     await expect(
       authServices.registerUser(input.email, input.username, input.password)
     ).rejects.toMatchObject({
@@ -76,8 +76,7 @@ describe('registerUser()', () => {
       'test@example.com'
     );
   });
-
-})
+});
 
 //  edge cases for login
 describe('loginUser()', () => {
@@ -91,53 +90,53 @@ describe('loginUser()', () => {
     email: 'test@user.com',
   };
 
-    beforeEach(()=> {
-        fakeLogger = {
-            info: vi.fn(),
-            warn: vi.fn(),
-            error: vi.fn()
-        }
-        fakeBcrypt = {
-            compare: vi.fn().mockReturnValue(true)
-        }
-        fakeJwt = {
-            sign: vi.fn().mockReturnValue('jwttoken123')
-            }
-        fakeRepo = {
-                getUserByUsername: vi.fn().mockResolvedValue(
-                    {
-                      username: 'testuser',
-                      email: 'test@user.com',
-                      password: 'hashpass123',
-                      isoauthuser: false,
-                      id: 2,
-                      public_id: 2234,
-                    },
-                ),
-            }
+  beforeEach(() => {
+    fakeLogger = {
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    };
+    fakeBcrypt = {
+      compare: vi.fn().mockReturnValue(true),
+    };
+    fakeJwt = {
+      sign: vi.fn().mockReturnValue('jwttoken123'),
+    };
+    fakeRepo = {
+      getUserByUsername: vi.fn().mockResolvedValue({
+        username: 'testuser',
+        email: 'test@user.com',
+        password: 'hashpass123',
+        isoauthuser: false,
+        id: 2,
+        public_id: 2234,
+      }),
+    };
 
-         authServices = createAuthServices({
-                userRepository: fakeRepo,
-                helperRepository: fakeHelperRepository,
-                jwt: fakeJwt,
-                bcrypt: fakeBcrypt,
-                crypto: {},
-                generateVerifyTokens: {},
-                generateUniqueUsername: {},
-                logger: fakeLogger,
-                
-            })
-    })
+    authServices = createAuthServices({
+      userRepository: fakeRepo,
+      helperRepository: fakeHelperRepository,
+      jwt: fakeJwt,
+      bcrypt: fakeBcrypt,
+      crypto: {},
+      generateVerifyTokens: {},
+      generateUniqueUsername: {},
+      logger: fakeLogger,
+    });
+  });
 
   // happy test
   it('should have logged in', async () => {
     // act
     const result = await authServices.loginUser(input.username, input.password);
-    const secretkey = process.env.JWT_SECRET_KEY
+    const secretkey = process.env.JWT_SECRET_KEY;
 
     // assert
     expect(fakeRepo.getUserByUsername).toHaveBeenCalledWith('testuser');
-    expect(fakeBcrypt.compare).toHaveBeenCalledWith('password123', 'hashpass123');
+    expect(fakeBcrypt.compare).toHaveBeenCalledWith(
+      'password123',
+      'hashpass123'
+    );
     expect(fakeJwt.sign).toHaveBeenCalledWith(UserInfo, secretkey, {
       expiresIn: '1h',
     });
@@ -146,17 +145,14 @@ describe('loginUser()', () => {
 
   // error test + edge cases
   it('should return error for oauthuser registered accounts', async () => {
-        fakeRepo.getUserByUsername.mockResolvedValue(
-            {
-              username: 'testuser',
-              password: 'hashpass123',
-              isoauthuser: true,
-              id: 2,
-              public_id: 2,
-            },
-
-        )
-   await expect(authServices.loginUser(input.username)).rejects.toMatchObject({
+    fakeRepo.getUserByUsername.mockResolvedValue({
+      username: 'testuser',
+      password: 'hashpass123',
+      isoauthuser: true,
+      id: 2,
+      public_id: 2,
+    });
+    await expect(authServices.loginUser(input.username)).rejects.toMatchObject({
       message: 'please sign in through google',
       statusCode: 402,
       errorCode: 'GOOGLE_REGISTERED',
@@ -166,7 +162,7 @@ describe('loginUser()', () => {
 
   // no result
   it('should return error for not registered accounts', async () => {
-    fakeRepo.getUserByUsername.mockResolvedValue()
+    fakeRepo.getUserByUsername.mockResolvedValue();
     await expect(authServices.loginUser(input.username)).rejects.toMatchObject({
       message: 'user doesnot exist',
       statusCode: 401,
@@ -178,14 +174,13 @@ describe('loginUser()', () => {
   // password didnot match
   it('should return error for wrong password', async () => {
     fakeRepo.getUserByUsername.mockResolvedValue({
-              username: 'testuser',
-              password: 'hashpass123',
-              isoauthuser: false,
-              id: 2,
-              public_id: 2,
-
-        })
-    fakeBcrypt.compare.mockReturnValue(false)
+      username: 'testuser',
+      password: 'hashpass123',
+      isoauthuser: false,
+      id: 2,
+      public_id: 2,
+    });
+    fakeBcrypt.compare.mockReturnValue(false);
     await expect(authServices.loginUser(input.username)).rejects.toMatchObject({
       message: 'incorrect password',
       statusCode: 400,
@@ -195,191 +190,190 @@ describe('loginUser()', () => {
   });
 });
 
- // OauthGoogleLogin
- describe('OauthGoogleLogin()', () => {
-    const input = {
-            sub: "icandothis",
-            email: "jaws@gmail.com",
-            name: "testuser"
-        }
+// OauthGoogleLogin
+describe('OauthGoogleLogin()', () => {
+  const input = {
+    sub: 'icandothis',
+    email: 'jaws@gmail.com',
+    name: 'testuser',
+  };
+  let userDetails = {
+    id: '231',
+    username: 'testuser',
+    email: 'jaws@gmail.com',
+    isoauthuser: true,
+    public_id: '231',
+  };
+  beforeEach(() => {
+    fakeLogger = {
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    };
+
+    fakeRepo = {
+      doesEmailExist: vi.fn().mockResolvedValue(true),
+      addNewUser: vi.fn().mockResolvedValue(userDetails),
+      getUserByEmail: vi.fn().mockResolvedValue(userDetails),
+    };
+    fakeJwt = {
+      sign: vi.fn().mockReturnValue('jwttoken123'),
+    };
+
+    // callling
+    authServices = createAuthServices({
+      userRepository: fakeRepo,
+      helperRepository: fakeHelperRepository,
+      jwt: fakeJwt,
+      bcrypt: {},
+      crypto: {},
+      generateVerifyTokens: {},
+      generateUniqueUsername: vi.fn().mockResolvedValue('testuser1'),
+      logger: fakeLogger,
+    });
+  });
+  // happy path
+
+  it('should be logged in successfully', async () => {
+    const result = await authServices.OauthGoogleLogin(
+      input.sub,
+      input.email,
+      input.name
+    );
+
+    expect(result).toEqual({
+      Jwttoken: 'jwttoken123',
+      userDetails: {
+        id: '231',
+        username: 'testuser',
+        email: 'jaws@gmail.com',
+      },
+    });
+    // list of expected calls
+    expect(fakeRepo.doesEmailExist).toBeCalledWith(input.email);
+    expect(fakeRepo.addNewUser).not.toBeCalledWith({
+      username: 'testuser1',
+      email: input.email,
+      password: null,
+      isoauthuser: true,
+      googleid: input.sub,
+    });
+    expect(fakeRepo.getUserByEmail).toBeCalledWith(input.email);
+  });
+  // handle second case what if user already exist
+  it('should be logged in successfully as new user', async () => {
+    fakeRepo.doesEmailExist.mockResolvedValue(false);
+    fakeJwt.sign.mockReturnValue('jwttoken123');
+
+    // callling
+    const result = await authServices.OauthGoogleLogin(
+      input.sub,
+      input.email,
+      input.name
+    );
+
+    expect(result).toEqual({
+      Jwttoken: 'jwttoken123',
+      userDetails: {
+        id: '231',
+        username: 'testuser',
+        email: 'jaws@gmail.com',
+      },
+    });
+    // list of expected calls
+    expect(fakeRepo.doesEmailExist).toBeCalledWith(input.email);
+    expect(fakeRepo.addNewUser).toBeCalledWith({
+      username: 'testuser1',
+      email: input.email,
+      password: null,
+      isoauthuser: true,
+      googleid: input.sub,
+    });
+    expect(fakeRepo.getUserByEmail).not.toBeCalledWith(input.email);
+  });
+
+  it('should throw an error for not being oauthuser', async () => {
+    userDetails = {
+      id: '231',
+      username: 'testuser',
+      email: 'jaws@gmail.com',
+      isoauthuser: false,
+      public_id: '231',
+    };
+    fakeRepo.doesEmailExist.mockResolvedValue(true);
+    fakeRepo.addNewUser.mockResolvedValue(userDetails);
+    fakeRepo.getUserByEmail.mockResolvedValue(userDetails);
+    fakeJwt.sign.mockReturnValue('jwttoken123');
+
+    // callling
+    await expect(
+      authServices.OauthGoogleLogin(input.sub, input.email, input.name)
+    ).rejects.toMatchObject({
+      message: 'please login using username and password',
+      statusCode: 402,
+      errorCode: 'LOCAL_EMAIL',
+    });
+    // list of expected calls
+    expect(fakeRepo.doesEmailExist).toBeCalledWith(input.email);
+    expect(fakeRepo.addNewUser).not.toBeCalledWith({
+      username: 'testuser1',
+      email: input.email,
+      password: null,
+      isoauthuser: true,
+      googleid: input.sub,
+    });
+    expect(fakeRepo.getUserByEmail).toBeCalledWith(input.email);
+  });
+
+  // getUserProfile
+  describe('getUserProfile()', () => {
+    const userPublicId = 'skfsdlfjsdfsdf';
     let userDetails = {
-            id: "231",
-            username: "testuser",
-            email: "jaws@gmail.com",
-            isoauthuser: true,
-            public_id: "231"
-        }
-    beforeEach(()=> {
-        fakeLogger = {
-            info: vi.fn(),
-            warn: vi.fn(),
-            error: vi.fn()
-            }
+      id: '312',
+      public_id: '321',
+      username: 'jake',
+      email: 'ja@gmail.com',
+    };
 
-        fakeRepo = {
-                doesEmailExist: vi.fn().mockResolvedValue(true),
-                addNewUser: vi.fn().mockResolvedValue(userDetails),
-                getUserByEmail: vi.fn().mockResolvedValue(userDetails)
-            }
-        fakeJwt = {
-                sign: vi.fn().mockReturnValue("jwttoken123")
-            }
+    beforeEach(() => {
+      fakeHelperRepository = {
+        getIdFromPublicId: vi.fn().mockReturnValue({
+          rows: [
+            {
+              id: '312',
+            },
+          ],
+        }),
+      };
+      fakeRepo = {
+        getUserProfile: vi.fn().mockReturnValue(userDetails),
+      };
+    });
 
-        // callling
-        authServices = createAuthServices({
-                userRepository: fakeRepo,
-                helperRepository: fakeHelperRepository,
-                jwt: fakeJwt,
-                bcrypt: {},
-                crypto: {},
-                generateVerifyTokens: {},
-                generateUniqueUsername: vi.fn().mockResolvedValue("testuser1"),
-                logger: fakeLogger,
-            })
-    })
-   // happy path
-    
-   it('should be logged in successfully',async()=>{
-        const result = await authServices.OauthGoogleLogin(input.sub,input.email,input.name)
-        
-        expect(result).toEqual({
-                Jwttoken: "jwttoken123",
-                userDetails: {
-                    id: "231",
-                    username: "testuser",
-                    email: "jaws@gmail.com"
-                }
-            })
-        // list of expected calls
-        expect(fakeRepo.doesEmailExist).toBeCalledWith(input.email)
-        expect(fakeRepo.addNewUser).not.toBeCalledWith({
-                username: "testuser1",
-                email: input.email,
-                password: null,
-                isoauthuser: true,
-                googleid: input.sub
-            })
-        expect(fakeRepo.getUserByEmail).toBeCalledWith(input.email)
-   })
-    // handle second case what if user already exist
-   it('should be logged in successfully as new user',async()=>{
-        fakeRepo.doesEmailExist.mockResolvedValue(false)
-        fakeJwt.sign.mockReturnValue("jwttoken123")
+    it('should return user details successfully', async () => {
+      let authServices = createAuthServices({
+        userRepository: fakeRepo,
+        helperRepository: fakeHelperRepository,
+        jwt: {},
+        bcrypt: {},
+        crypto: {},
+        generateVerifyTokens: {},
+        generateUniqueUsername: {},
+        logger: fakeLogger,
+      });
+      const result = await authServices.getUserProfile(userPublicId);
+      expect(result).toEqual(userDetails);
+      expect(fakeHelperRepository.getIdFromPublicId).toBeCalledWith(
+        'users',
+        userPublicId
+      );
+      expect(fakeRepo.getUserProfile).toBeCalledWith({ id:'312'});
+    });
+  });
+});
 
-        // callling
-        const result = await authServices.OauthGoogleLogin(input.sub,input.email,input.name)
-        
-        expect(result).toEqual({
-                Jwttoken: "jwttoken123",
-                userDetails: {
-                    id: "231",
-                    username: "testuser",
-                    email: "jaws@gmail.com"
-                }
-            })
-        // list of expected calls
-        expect(fakeRepo.doesEmailExist).toBeCalledWith(input.email)
-        expect(fakeRepo.addNewUser).toBeCalledWith({
-                username: "testuser1",
-                email: input.email,
-                password: null,
-                isoauthuser: true,
-                googleid: input.sub
-            })
-        expect(fakeRepo.getUserByEmail).not.toBeCalledWith(input.email)
-   })
-
-   it('should throw an error for not being oauthuser',async()=>{
-        userDetails = {
-                id: "231",
-                username: "testuser",
-                email: "jaws@gmail.com",
-                isoauthuser: false,
-                public_id: "231"
-            }
-        fakeRepo.doesEmailExist.mockResolvedValue(true)
-        fakeRepo.addNewUser.mockResolvedValue(userDetails)
-        fakeRepo.getUserByEmail.mockResolvedValue(userDetails)
-        fakeJwt.sign.mockReturnValue("jwttoken123")
-
-        // callling
-        await expect(authServices.OauthGoogleLogin(input.sub,input.email,input.name)
-        ).rejects.toMatchObject({
-              message: 'please login using username and password',
-              statusCode: 402,
-              errorCode: 'LOCAL_EMAIL',
-            })
-        // list of expected calls
-        expect(fakeRepo.doesEmailExist).toBeCalledWith(input.email)
-        expect(fakeRepo.addNewUser).not.toBeCalledWith({
-                username: "testuser1",
-                email: input.email,
-                password: null,
-                isoauthuser: true,
-                googleid: input.sub
-            })
-        expect(fakeRepo.getUserByEmail).toBeCalledWith(input.email)
-   })
-
-    // getUserProfile 
-    describe('getUserProfile()',()=>{
-        const userPublicId = 'skfsdlfjsdfsdf'
-        let userDetails = {
-            id: '312',
-            public_id: '321',
-            username: 'jake',
-            email: 'ja@gmail.com',
-        }
-
-        beforeEach(()=> {
-            fakeHelperRepository = {
-                getIdFromPublicId: vi.fn().mockReturnValue({
-                    rows: [
-                        {
-                            id: '312'
-                        }
-                    ]
-                })
-            }            
-            fakeRepo = {
-                getUserProfile: vi.fn().mockReturnValue(userDetails)
-            }
-        })
-
-        it('should return user details successfully',async() => {
-            let authServices = createAuthServices({
-                userRepository: fakeRepo,
-                helperRepository: fakeHelperRepository,
-                jwt: {},
-                bcrypt: {},
-                crypto: {},
-                generateVerifyTokens: {},
-                generateUniqueUsername: {},
-                logger: fakeLogger,
-
-            })
-            const result = await authServices.getUserProfile(userPublicId)
-            expect(result).toEqual({
-                "message": "user profile info retrieved successfully",
-                "success": true,
-                "userDetails": userDetails
-            })
-            expect(fakeHelperRepository.getIdFromPublicId).toBeCalledWith("users",userPublicId)
-            expect(fakeRepo.getUserProfile).toBeCalledWith('312')
-        })
-
-    })
-
-
- })
-
-
-
- // verifyEmailService
+// verifyEmailService
 //  describe('verifyEmailService()', () => {
 //    // happy path
 //    it('should be logged in successfully',()=>{
 //    })
-
-
-

@@ -58,23 +58,24 @@ router.get(
   '/notifications',
   authMiddleware.requireAuth,
   placeControllers.getNotification
-)
+);
 
 router.get(
-    '/place',
-    authMiddleware.requireAuth,
-    placeControllers.getLocationName
-)
+  '/place',
+  authMiddleware.requireAuth,
+  placeControllers.getLocationName
+);
 
-router.post('/collection',
-    authMiddleware.requireAuth,
-    placeControllers.setCollection
-)
+router.post(
+  '/collection',
+  authMiddleware.requireAuth,
+  placeControllers.setCollection
+);
 
-router.get('/collection',
-    authMiddleware.requireAuth,
-    placeControllers.getCollection
-    )
-    
+router.get(
+  '/collection',
+  authMiddleware.requireAuth,
+  placeControllers.getCollection
+);
 
 export default router;

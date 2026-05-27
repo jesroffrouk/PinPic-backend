@@ -120,23 +120,23 @@ const validateMiddlewares = {
     logger.info('Validated');
     next();
   },
-  validateUpvotes: (req,res,next) => {
-    logger.info("validating inputs..")
-    const {react_type,imgid} = req.body
-    const reactions = ['like','dislike']
+  validateUpvotes: (req, res, next) => {
+    logger.info('validating inputs..');
+    const { react_type, imgid } = req.body;
+    const reactions = ['like', 'dislike'];
     if (!react_type) {
-      throw new CustomError('provide react type',422,'INVALID_INPUT')
+      throw new CustomError('provide react type', 422, 'INVALID_INPUT');
     }
 
-    if (typeof react_type !== 'string' || !reactions.includes(react_type)){
-      throw new CustomError('invalid react type',422,'INVALID_INPUT')
+    if (typeof react_type !== 'string' || !reactions.includes(react_type)) {
+      throw new CustomError('invalid react type', 422, 'INVALID_INPUT');
     }
 
-    if (!imgid || typeof imgid !== 'number'){
-      throw new CustomError('invalid image',422,'INVALID_INPUT')
+    if (!imgid || typeof imgid !== 'number') {
+      throw new CustomError('invalid image', 422, 'INVALID_INPUT');
     }
     next();
-  }
+  },
 };
 
 export default validateMiddlewares;

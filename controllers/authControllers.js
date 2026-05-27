@@ -27,7 +27,11 @@ const authControllers = {
       maxAge: 60 * 60 * 1000,
     });
     logger.info('user registered successfully, cookie sent');
-    res.status(201).json({ user: UserInfo, message: 'successfully logged in',success: true});
+    res.status(201).json({
+      user: UserInfo,
+      message: 'successfully logged in',
+      success: true,
+    });
   }),
 
   logoutUser: catchAsync(async (req, res) => {
@@ -38,15 +42,17 @@ const authControllers = {
       sameSite: 'None',
     });
     logger.info('user logged out successfully');
-    return res.status(201).json({message: "user logged out successfully"});
+    return res.status(201).json({ message: 'user logged out successfully' });
   }),
   getUser: catchAsync(async (req, res) => {
     logger.info('getting user...');
     const userDetails = req.user;
     logger.info('user retrived successfully');
-    res
-      .status(201)
-      .json({user: userDetails, success: true, message: 'user data retrived successfully' });
+    res.status(201).json({
+      user: userDetails,
+      success: true,
+      message: 'user data retrived successfully',
+    });
   }),
 
   LoginWithGoogle: catchAsync(async (req, res) => {
@@ -80,7 +86,7 @@ const authControllers = {
     logger.info('getUserProfile started..');
     const userId = req.user.id;
     const result = await authServices.getUserProfile(userId);
-    console.log(result)
+    console.log(result);
     logger.info('get User profile details successfull');
     res.status(201).json(result);
   }),
