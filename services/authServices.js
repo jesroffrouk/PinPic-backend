@@ -160,7 +160,7 @@ function createAuthServices({
         'users',
         userPublicId
       );
-      const userId = userResult?.rows[0];
+      const userId = userResult?.rows[0]?.id;
 
       if (!userId) {
         logger.warn(`User publicId ${userPublicId} doesn't found`);
