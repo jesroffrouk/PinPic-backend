@@ -6,13 +6,13 @@ import cors from 'cors';
 import 'dotenv/config';
 import globalErrorHandler from './middlewares/errorHandler.js';
 import { createLoggerFor } from './helpers/loggers/loggers.js';
-import http from 'http'
+import http from 'http';
 import { init } from './socket.js';
 
 const app = express();
 const port = process.env.PORT || 3000;
 const logger = createLoggerFor(import.meta.url, 'Port service');
-const server = http.createServer(app)
+const server = http.createServer(app);
 init(server);
 
 app.use(express.json());

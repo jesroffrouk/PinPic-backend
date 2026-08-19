@@ -20,6 +20,11 @@ router.post(
 );
 router.get('/logout', authMiddleware.requireAuth, authControllers.logoutUser);
 router.get('/me', authMiddleware.requireAuth, authControllers.getUser);
+router.get(
+  '/profile',
+  authMiddleware.requireAuth,
+  authControllers.getUserProfile
+);
 router.post(
   '/google',
   authMiddleware.blockIfAuth,

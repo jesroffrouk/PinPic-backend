@@ -22,7 +22,13 @@ router.get(
   '/all',
   validateMiddlewares.validateLocation,
   authMiddleware.requireAuth,
-  placeControllers.getImagesByLocation
+  placeControllers.getAllImagesByLocation
+);
+router.get(
+  '/story',
+  validateMiddlewares.validateLocation,
+  authMiddleware.requireAuth,
+  placeControllers.getImageById
 );
 
 router.post(
@@ -32,9 +38,44 @@ router.post(
 );
 
 router.get(
+  '/comments',
+  authMiddleware.requireAuth,
+  placeControllers.getComments
+);
+router.post(
+  '/comments',
+  authMiddleware.requireAuth,
+  placeControllers.setComment
+);
+
+router.post(
+  '/visitors',
+  authMiddleware.requireAuth,
+  placeControllers.setVisitors
+);
+
+router.get(
   '/notifications',
   authMiddleware.requireAuth,
   placeControllers.getNotification
-)
+);
+
+router.get(
+  '/place',
+  authMiddleware.requireAuth,
+  placeControllers.getLocationName
+);
+
+router.post(
+  '/collection',
+  authMiddleware.requireAuth,
+  placeControllers.setCollection
+);
+
+router.get(
+  '/collection',
+  authMiddleware.requireAuth,
+  placeControllers.getCollection
+);
 
 export default router;

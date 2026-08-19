@@ -24,3 +24,6 @@ build/
 .idea/
 
 /generated/prisma
+
+# perosnal files
+ISSUE.md
