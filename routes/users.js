@@ -5,6 +5,10 @@ import validateMiddleware from '../middlewares/validateMiddlewares.js';
 
 const router = express.Router();
 
+router.get(
+  '/healthz',
+   authControllers.uptimeCheck
+);
 router.post(
   '/register',
   validateMiddleware.validateEmail,

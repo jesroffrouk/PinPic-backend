@@ -13,6 +13,11 @@ function createAuthServices({
   logger,
 }) {
   return {
+    uptimeCheck: async(req,res) => {
+      logger.info('Health check running...');
+      await helperRepository.getUptimeCheck();
+      return { message: "OK"}
+    },
     registerUser: async (email, username, password) => {
       const isUserExist = await userRepository.doesUserExist(username, email);
       if (isUserExist) {
