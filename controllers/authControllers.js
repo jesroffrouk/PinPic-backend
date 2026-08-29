@@ -5,6 +5,10 @@ import { createLoggerFor } from '../helpers/loggers/loggers.js';
 const logger = createLoggerFor(import.meta.url, 'auth controlller service');
 
 const authControllers = {
+  uptimeCheck: catchAsync(async(req,res)=> {
+    const result = await authServices.uptimeCheck();
+    res.status(201).send(result.message);
+  }),
   registerUser: catchAsync(async (req, res) => {
     logger.info('register user started..');
     const { email, username, password } = req.body;
