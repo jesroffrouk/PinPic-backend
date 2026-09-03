@@ -46,7 +46,7 @@ const authControllers = {
       sameSite: 'None',
     });
     logger.info('user logged out successfully');
-    return res.status(201).json({ message: 'user logged out successfully' });
+    return res.status(201).json({ success: true , message: 'user logged out successfully' });
   }),
   getUser: catchAsync(async (req, res) => {
     logger.info('getting user...');

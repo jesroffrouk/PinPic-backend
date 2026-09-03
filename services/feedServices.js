@@ -16,7 +16,7 @@ const feedServices = {
         'posts',
         postPublicId
       );
-      const postId = postResult?.rows[0];
+      const {id: postId} = postResult?.rows[0];
 
       if (!postId) {
         logger.warn(`Posts publicId ${postPublicId} doesn't found`);

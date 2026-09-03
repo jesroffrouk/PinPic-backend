@@ -22,6 +22,11 @@ router.post(
   authMiddleware.blockIfAuth,
   authControllers.loginUser
 );
+router.post(
+  '/logout',
+  authMiddleware.requireAuth,
+  authControllers.logoutUser
+);
 router.get('/logout', authMiddleware.requireAuth, authControllers.logoutUser);
 router.get('/me', authMiddleware.requireAuth, authControllers.getUser);
 router.get(

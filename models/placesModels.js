@@ -51,6 +51,7 @@ const placesModels = {
     latitude
   ) => {
     logger.info('getting next latest 10 images from db');
+    //[BUG] input syntax error for posts.id post_id($2) looks like issue of bigint
     return await db.query(
       `SELECT 
       posts.public_id as id,
