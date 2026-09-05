@@ -7,11 +7,14 @@ import { createLoggerFor } from './helpers/loggers/loggers.js';
 import jwt from 'jsonwebtoken';
 import createHelperRepository from './models/helper.model.js';
 import db from './config/db/conn.js';
+import cloudinary from './config/cloudinary.js';
 
 const authLogger = createLoggerFor(import.meta.url, 'auth service');
+const profileLogger = createLoggerFor(import.meta.url, 'profile service');
 
 import createUserRepository from './models/userModels.js';
 import createAuthServices from './services/authServices.js';
+import createProfileServices from './services/profileServices.js';
 
 const prisma = new PrismaClient();
 
@@ -26,4 +29,11 @@ export const authServices = createAuthServices({
   generateVerifyTokens,
   generateUniqueUsername,
   logger: authLogger,
+});
+
+export const profileServices = createProfileServices({
+  userRepository,
+  helperRepository,
+  logger: profileLogger,
+  cloudinary
 });

@@ -2,8 +2,12 @@ import express from 'express';
 import authControllers from '../controllers/authControllers.js';
 import authMiddleware from '../middlewares/authMiddleware.js';
 import validateMiddleware from '../middlewares/validateMiddlewares.js';
+import multer from 'multer';
 
 const router = express.Router();
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
 router.get(
   '/healthz',
@@ -44,6 +48,14 @@ router.patch(
   '/verifyemail',
   validateMiddleware.validateVerifyEmailToken,
   authControllers.verifyEmail
+);
+
+router.post(
+  '/profile',
+  upload.single('image'),
+  validateMiddleware.validateImage,
+  authMiddleware.requireAuth,
+  authControllers.setProfileImage
 );
 
 export default router;

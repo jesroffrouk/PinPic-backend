@@ -1,5 +1,5 @@
 import catchAsync from '../utils/catchAsync.js';
-import { authServices } from '../container.js';
+import { authServices, profileServices } from '../container.js';
 import { createLoggerFor } from '../helpers/loggers/loggers.js';
 
 const logger = createLoggerFor(import.meta.url, 'auth controlller service');
@@ -92,6 +92,17 @@ const authControllers = {
     const result = await authServices.getUserProfile(userId);
     console.log(result);
     logger.info('get User profile details successfull');
+    res.status(201).json(result);
+  }),
+  setProfileImage: catchAsync(async (req, res) => {
+    logger.info('setUserProfileImage started..');
+    const userId = req.user.id;
+    const fileBase64 = `data:${
+      req.file.mimetype
+    };base64,${req.file.buffer.toString('base64')}`;
+    // validate Inputs
+    const result = await profileServices.setProfileImage(fileBase64,userId);
+    logger.info('set User profile image successfull');
     res.status(201).json(result);
   }),
 };
