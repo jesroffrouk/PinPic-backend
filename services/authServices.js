@@ -179,7 +179,7 @@ function createAuthServices({
       const unsigneddUrlUser = await userRepository.getUserProfile(userId);
 
       let user;
-      if (unsigneddUrlUser) {
+      if (unsigneddUrlUser.profile_url) {
         user = {
           ...unsigneddUrlUser,
           profile_url: generateSignedUrl(unsigneddUrlUser.profile_url),
