@@ -26,10 +26,6 @@ app.use(
 
 app.use('/img', places);
 app.use('/auth', users);
-app.get('/healthz',(req,res) => {
-    logger.info('Health check running...');
-    res.status(200).send('OK');
-} )
 
 app.use(globalErrorHandler);
 server.listen(port, () => {

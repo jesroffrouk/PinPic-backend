@@ -1,10 +1,14 @@
 import catchAsync from '../utils/catchAsync.js';
-import { authServices } from '../container.js';
+import { authServices, profileServices } from '../container.js';
 import { createLoggerFor } from '../helpers/loggers/loggers.js';
 
 const logger = createLoggerFor(import.meta.url, 'auth controlller service');
 
 const authControllers = {
+  uptimeCheck: catchAsync(async(req,res)=> {
+    const result = await authServices.uptimeCheck();
+    res.status(201).send(result.message);
+  }),
   registerUser: catchAsync(async (req, res) => {
     logger.info('register user started..');
     const { email, username, password } = req.body;
@@ -42,7 +46,7 @@ const authControllers = {
       sameSite: 'None',
     });
     logger.info('user logged out successfully');
-    return res.status(201).json({ message: 'user logged out successfully' });
+    return res.status(201).json({ success: true , message: 'user logged out successfully' });
   }),
   getUser: catchAsync(async (req, res) => {
     logger.info('getting user...');
@@ -88,6 +92,17 @@ const authControllers = {
     const result = await authServices.getUserProfile(userId);
     console.log(result);
     logger.info('get User profile details successfull');
+    res.status(201).json(result);
+  }),
+  setProfileImage: catchAsync(async (req, res) => {
+    logger.info('setUserProfileImage started..');
+    const userId = req.user.id;
+    const fileBase64 = `data:${
+      req.file.mimetype
+    };base64,${req.file.buffer.toString('base64')}`;
+    // validate Inputs
+    const result = await profileServices.setProfileImage(fileBase64,userId);
+    logger.info('set User profile image successfull');
     res.status(201).json(result);
   }),
 };

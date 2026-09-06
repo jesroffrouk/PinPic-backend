@@ -2,9 +2,17 @@ import express from 'express';
 import authControllers from '../controllers/authControllers.js';
 import authMiddleware from '../middlewares/authMiddleware.js';
 import validateMiddleware from '../middlewares/validateMiddlewares.js';
+import multer from 'multer';
 
 const router = express.Router();
 
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+router.get(
+  '/healthz',
+   authControllers.uptimeCheck
+);
 router.post(
   '/register',
   validateMiddleware.validateEmail,
@@ -17,6 +25,11 @@ router.post(
   validateMiddleware.validateUserCrendentials,
   authMiddleware.blockIfAuth,
   authControllers.loginUser
+);
+router.post(
+  '/logout',
+  authMiddleware.requireAuth,
+  authControllers.logoutUser
 );
 router.get('/logout', authMiddleware.requireAuth, authControllers.logoutUser);
 router.get('/me', authMiddleware.requireAuth, authControllers.getUser);
@@ -35,6 +48,14 @@ router.patch(
   '/verifyemail',
   validateMiddleware.validateVerifyEmailToken,
   authControllers.verifyEmail
+);
+
+router.post(
+  '/profile',
+  upload.single('image'),
+  validateMiddleware.validateImage,
+  authMiddleware.requireAuth,
+  authControllers.setProfileImage
 );
 
 export default router;

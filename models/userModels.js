@@ -123,6 +123,15 @@ function createUserRepository({ prisma }) {
         },
       });
     },
+    async setProfileImage(profile_url,userId) {
+      logger.info('setting user profile picture into database');
+      return await prisma.users.update({
+        where: { id: userId },
+        data: {
+          profile_url
+        }
+      });
+    },
   };
 }
 

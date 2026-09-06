@@ -1,6 +1,7 @@
 // import sendMail from '../helpers/mailers/sendMail.js';
 import 'dotenv/config';
 import CustomError from '../utils/CustomError.js';
+import { generateSignedUrl } from '../utils/generateSignedUrl.js';
 
 function createAuthServices({
   userRepository,
@@ -13,6 +14,11 @@ function createAuthServices({
   logger,
 }) {
   return {
+    uptimeCheck: async(req,res) => {
+      logger.info('Health check running...');
+      await helperRepository.getUptimeCheck();
+      return { message: "OK"}
+    },
     registerUser: async (email, username, password) => {
       const isUserExist = await userRepository.doesUserExist(username, email);
       if (isUserExist) {
@@ -170,7 +176,15 @@ function createAuthServices({
           'USER NOT FOUND'
         );
       }
-      const user = await userRepository.getUserProfile(userId);
+      const unsigneddUrlUser = await userRepository.getUserProfile(userId);
+
+      let user;
+      if (unsigneddUrlUser) {
+        user = {
+          ...unsigneddUrlUser,
+          profile_url: generateSignedUrl(unsigneddUrlUser.profile_url),
+        };
+      }
       return user;
     },
   };
